@@ -1,0 +1,33 @@
+### sample REST calls to show API functionality
+### works in Intellij Ultimate (paid)
+### or in VS Code with the REST Client extension (free)
+
+GET http://localhost:8080/posts
+
+###
+
+GET http://localhost:8080/posts/3
+
+###
+
+POST http://localhost:8080/addPost
+Content-Type: application/json
+
+{
+    "content": "this is fun!"
+}
+
+###
+
+PATCH http://localhost:8080/updatePost/2
+Content-Type: application/json
+
+{
+    "content": "this is now updated"
+}
+
+###
+
+DELETE http://localhost:8080/deletePost/4
+
+
