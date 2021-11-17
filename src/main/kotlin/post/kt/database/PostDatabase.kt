@@ -10,15 +10,12 @@ class PostDatabase {
     }
 
     private fun initDatabase(): HashMap<Int, Post> {
-        return hashMapOf(
-            1 to Post(1, "content for post 1"),
-            2 to Post(2, "content for post 2"),
-            3 to Post(3, "content for post 3")
-        )
+        // load data into table
+        return HashMap<Int, Post>()
     }
 
     private fun createPostId(): Int {
-        return getNextPostId(posts.size)
+        return getNextPostId(posts.size + 1)
     }
 
     private fun getNextPostId(id: Int): Int = when {
