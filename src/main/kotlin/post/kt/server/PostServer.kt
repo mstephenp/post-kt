@@ -1,30 +1,30 @@
 package post.kt.server
 
 import io.javalin.Javalin
-import io.javalin.apibuilder.ApiBuilder
+import io.javalin.apibuilder.ApiBuilder.*
 import post.kt.handlers.PostHandler
 import post.kt.services.PostDatabaseService
 
 class PostServer {
 
     fun create(): Javalin {
-        val app = Javalin.create()
+        val app = Javalin.create() { it.enableDevLogging() }
         val databaseService = PostDatabaseService()
 
         app.routes {
-            ApiBuilder.get("/posts") {
+            get("/posts") {
                 PostHandler.getPosts(it, databaseService)
             }
-            ApiBuilder.get("/posts/{postId}") {
+            get("/posts/{postId}") {
                 PostHandler.getPostById(it, databaseService)
             }
-            ApiBuilder.post("/addPost") {
+            post("/addPost") {
                 PostHandler.addPost(it, databaseService)
             }
-            ApiBuilder.patch("/updatePost/{postId}") {
+            patch("/updatePost/{postId}") {
                 PostHandler.updatePost(it, databaseService)
             }
-            ApiBuilder.delete("/deletePost/{postId}") {
+            delete("/deletePost/{postId}") {
                 PostHandler.deletePost(it, databaseService)
             }
         }

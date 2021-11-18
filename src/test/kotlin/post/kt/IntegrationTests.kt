@@ -10,21 +10,74 @@ class IntegrationTests {
 
     private val app = PostServer()
 
+
     @Test
     fun `GET to fetch posts returns a list of posts`() {
-        app.create().start(1234)
-        val r1: HttpResponse<String> = Unirest.get("http://localhost:1234/posts").asString()
-        assertThat(r1.status).isEqualTo(200)
-        assertThat(r1.body).isEqualTo("[]")
+        val port = 1234
+        Unirest.config().defaultBaseUrl("http://localhost:$port")
+        app.create().start(port)
 
-        val r2: HttpResponse<String> = Unirest.post("http://localhost:1234/addPost")
+        val getAllPostsResponseEmpty: HttpResponse<String> = Unirest.get("/posts").asString()
+        assertThat(getAllPostsResponseEmpty.status).isEqualTo(200)
+        assertThat(getAllPostsResponseEmpty.body).isEqualTo("[]")
+
+        val addPostResponse: HttpResponse<String> = Unirest.post("/addPost")
             .header("accept", "application/json")
             .body("{ \"content\": \"this is some content\"}")
             .asString()
-        assertThat(r2.status).isEqualTo(200)
+        assertThat(addPostResponse.status).isEqualTo(200)
 
-        val r3: HttpResponse<String> = Unirest.get("http://localhost:1234/posts").asString()
-        assertThat(r3.status).isEqualTo(200)
-        assertThat(r3.body).isEqualTo("[{\"id\":1,\"content\":\"this is some content\"}]")
+        val getAllPostsResponseNotEmpty: HttpResponse<String> = Unirest.get("/posts").asString()
+        assertThat(getAllPostsResponseNotEmpty.status).isEqualTo(200)
+        assertThat(getAllPostsResponseNotEmpty.body).isEqualTo("[{\"id\":1,\"content\":\"this is some content\"}]")
+    }
+
+    @Test
+    fun `UPDATE changes post content`() {
+        val port = 1235
+        Unirest.config().defaultBaseUrl("http://localhost:$port")
+        app.create().start(port)
+        val createPostResponse: HttpResponse<String> = Unirest.post("/addPost")
+            .header("accept", "application/json")
+            .body("{ \"content\": \"this is some content\"}")
+            .asString()
+        assertThat(createPostResponse.status).isEqualTo(200)
+
+        val getPostByIdResponseBefore: HttpResponse<String> = Unirest.get("/posts/1").asString()
+        assertThat(getPostByIdResponseBefore.status).isEqualTo(200)
+        assertThat(getPostByIdResponseBefore.body).isEqualTo("{\"id\":1,\"content\":\"this is some content\"}")
+
+        val updatePostResponse: HttpResponse<String> = Unirest.patch("/updatePost/1")
+            .header("accept", "application/json")
+            .body("{ \"content\": \"updated content\"}")
+            .asString()
+        assertThat(updatePostResponse.status).isEqualTo(200)
+
+        val getPostByIdResponseAfter: HttpResponse<String> = Unirest.get("/posts/1").asString()
+        assertThat(getPostByIdResponseAfter.status).isEqualTo(200)
+        assertThat(getPostByIdResponseAfter.body).isEqualTo("{\"id\":1,\"content\":\"updated content\"}")
+    }
+
+    @Test
+    fun `DELETE removes post`() {
+        val port = 1236
+        Unirest.config().defaultBaseUrl("http://localhost:$port")
+        app.create().start(port)
+
+        val addPostResponse: HttpResponse<String> = Unirest.post("/addPost")
+            .header("accept", "application/json")
+            .body("{ \"content\": \"this is some content\"}")
+            .asString()
+        assertThat(addPostResponse.status).isEqualTo(200)
+
+        val getPostResponseBefore: HttpResponse<String> = Unirest.get("/posts/1").asString()
+        assertThat(getPostResponseBefore.status).isEqualTo(200)
+        assertThat(getPostResponseBefore.body).isEqualTo("{\"id\":1,\"content\":\"this is some content\"}")
+
+        val deletePostResponse: HttpResponse<String> = Unirest.delete("/deletePost/1").asString()
+        assertThat(deletePostResponse.status).isEqualTo(200)
+
+        val getPostResponseAfter: HttpResponse<String> = Unirest.get("/posts/1").asString()
+        assertThat(getPostResponseAfter.status).isEqualTo(404)
     }
 }

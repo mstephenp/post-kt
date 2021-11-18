@@ -10,6 +10,7 @@ class PostHandler() {
 
         fun getPosts(ctx: Context, databaseService: PostDatabaseService) {
             val posts = databaseService.getPosts()
+            ctx.status(HttpCode.OK)
             ctx.json(posts)
         }
 
@@ -18,15 +19,17 @@ class PostHandler() {
             val post = databaseService.getPost(id)
             if (post.isPresent) {
                 ctx.json(post.get())
+                ctx.status(HttpCode.OK)
             } else {
                 ctx.json("")
+                ctx.status(HttpCode.NOT_FOUND)
             }
         }
 
         fun addPost(ctx: Context, databaseService: PostDatabaseService) {
             val request = ctx.bodyAsClass<PostRequest>()
             if (request.content.isEmpty()) {
-                ctx.status(HttpCode.NOT_FOUND)
+                ctx.status(HttpCode.BAD_REQUEST)
             } else {
                 databaseService.addPost(request)
                 ctx.status(HttpCode.OK)
